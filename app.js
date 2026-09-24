@@ -133,9 +133,6 @@
     filmReel: $('#filmReel'),
     btnReplay: $('#btnReplay'),
     btnChangeHelp: $('#btnChangeHelp'),
-    helpSheet: $('#helpSheet'),
-    helpBackdrop: $('#helpBackdrop'),
-    btnCloseHelp: $('#btnCloseHelp'),
   };
 
   function tickClock() {
@@ -325,23 +322,25 @@
     setTimeout(() => beep(784, 0.12), 200);
   }
 
-  function openHelpSheet() {
-    el.helpSheet.hidden = false;
-  }
-  function closeHelpSheet() {
-    el.helpSheet.hidden = true;
+  const HELP_ORDER = ['more', 'mid', 'challenge'];
+
+  function cycleHelpLevel() {
+    const i = HELP_ORDER.indexOf(state.helpLevel);
+    const next = HELP_ORDER[(i + 1) % HELP_ORDER.length];
+    setHelpLevel(next);
+    const labels = { more: 'More help', mid: 'Just right', challenge: 'Challenge me' };
+    el.btnHelp.setAttribute('title', labels[next]);
+    el.btnHelp.setAttribute('aria-label', 'Help level: ' + labels[next]);
   }
 
-  // Events
+  // Events — no popup sheet (Safari bottom bar blocked Chiudi)
   el.btnStart.addEventListener('click', startFilm);
   el.btnReplay.addEventListener('click', startFilm);
-  el.btnChangeHelp.addEventListener('click', () => {
-    showScreen(el.screenStart);
-    openHelpSheet();
+  el.btnChangeHelp.addEventListener('click', () => showScreen(el.screenStart));
+  el.btnHelp.addEventListener('click', () => {
+    if (el.screenStart.classList.contains('active')) cycleHelpLevel();
+    else showScreen(el.screenStart);
   });
-  el.btnHelp.addEventListener('click', openHelpSheet);
-  el.btnCloseHelp.addEventListener('click', closeHelpSheet);
-  el.helpBackdrop.addEventListener('click', closeHelpSheet);
 
   el.btnMute.addEventListener('click', () => setMuted(!state.muted));
 
@@ -349,8 +348,6 @@
     const helpBtn = e.target.closest('.help-chip');
     if (helpBtn?.dataset.help) {
       setHelpLevel(helpBtn.dataset.help);
-      // Auto-close sheet so Action / tense buttons aren't blocked
-      closeHelpSheet();
       return;
     }
     const tenseBtn = e.target.closest('.tense-chip');

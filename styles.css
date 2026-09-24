@@ -599,3 +599,14 @@ button:disabled { opacity: 0.45; cursor: default; }
 
 .locked .scene-frame { filter: saturate(1.05); }
 .locked .italian-line { color: var(--success); }
+
+/* safari bottom chrome */
+.primary-btn {
+  margin-bottom: max(12px, calc(env(safe-area-inset-bottom, 0px) + 28px));
+  min-height: 52px;
+  position: relative;
+  z-index: 5;
+}
+.screen#screenStart {
+  padding-bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 48px));
+}
