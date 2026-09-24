@@ -281,6 +281,10 @@ button:disabled { opacity: 0.45; cursor: default; }
   color: var(--muted);
 }
 
+.primary-btn, .ghost-btn, .tense-chip, .help-chip, .icon-btn, .try-again {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
 .primary-btn, .ghost-btn {
   width: 100%;
   border-radius: 16px;

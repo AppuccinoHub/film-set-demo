@@ -349,6 +349,8 @@
     const helpBtn = e.target.closest('.help-chip');
     if (helpBtn?.dataset.help) {
       setHelpLevel(helpBtn.dataset.help);
+      // Auto-close sheet so Action / tense buttons aren't blocked
+      closeHelpSheet();
       return;
     }
     const tenseBtn = e.target.closest('.tense-chip');
