@@ -1,0 +1,11 @@
+{
+  "name": "Film Set — Italian 3",
+  "short_name": "Film Set",
+  "description": "Director tense practice: Presente, Imperfetto, Passato prossimo.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f7f3eb",
+  "theme_color": "#f7f3eb",
+  "lang": "it",
+  "orientation": "portrait"
+}

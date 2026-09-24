@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f7f3eb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="description" content="Film Set (Il Set) — Italian 3 tense practice: Presente, Imperfetto, Passato prossimo." />
+  <meta property="og:title" content="Film Set — Italian 3" />
+  <meta property="og:description" content="Be the director: pick the right Italian tense for each storyboard shot." />
+  <meta property="og:type" content="website" />
+  <title>Film Set — Italian 3</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a1a1a'/%3E%3Crect x='8' y='14' width='48' height='36' rx='4' fill='%23f7f3eb'/%3E%3Crect x='8' y='14' width='10' height='8' fill='%231a1a1a'/%3E%3Crect x='22' y='14' width='10' height='8' fill='%231a1a1a'/%3E%3Crect x='36' y='14' width='10' height='8' fill='%231a1a1a'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <div class="stage">
+    <div class="phone" id="phone" role="application" aria-label="Film Set Italian tense practice">
+      <div class="status-bar" aria-hidden="true">
+        <span class="status-time" id="statusTime">9:41</span>
+        <span class="status-notch"></span>
+        <span class="status-icons">
+          <span class="sig"></span>
+          <span class="wifi"></span>
+          <span class="bat"></span>
+        </span>
+      </div>
+
+      <header class="app-header">
+        <div class="brand">
+          <span class="clapper" aria-hidden="true">🎬</span>
+          <div>
+            <h1>Film Set</h1>
+            <p class="subtitle">Il Set · Italiano 3</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="icon-btn" id="btnMute" aria-label="Mute sound" title="Sound">🔇</button>
+          <button type="button" class="icon-btn" id="btnHelp" aria-label="Help level" title="Help level">🎚️</button>
+        </div>
+      </header>
+
+      <!-- Title / Start screen -->
+      <section class="screen active" id="screenStart" aria-label="Start">
+        <div class="poster">
+          <div class="poster-tag">Mini demo · 6 shots</div>
+          <div class="poster-art" aria-hidden="true">
+            <div class="scene-glow"></div>
+            <div class="emoji-collage">☕ 🌙 ✨</div>
+            <div class="poster-title">Al bar</div>
+            <div class="poster-sub">Sabato sera · amici · caffè</div>
+          </div>
+          <p class="poster-pitch">Sei la regista. Per ogni inquadratura, scegli il tempo giusto: <strong>Presente</strong>, <strong>Imperfetto</strong> o <strong>Passato prossimo</strong>.</p>
+        </div>
+
+        <div class="help-panel" id="helpPanelStart">
+          <p class="help-label">Livello di aiuto</p>
+          <div class="help-row" role="group" aria-label="Help level">
+            <button type="button" class="help-chip" data-help="more">More help</button>
+            <button type="button" class="help-chip" data-help="mid" aria-pressed="true">Just right</button>
+            <button type="button" class="help-chip" data-help="challenge">Challenge me</button>
+          </div>
+          <p class="help-hint" id="helpHint">Italian + short context under each line.</p>
+        </div>
+
+        <button type="button" class="primary-btn" id="btnStart">Action! · Inizia</button>
+      </section>
+
+      <!-- Shoot screen -->
+      <section class="screen" id="screenShoot" aria-label="Storyboard shoot" hidden>
+        <div class="storyboard" id="storyboard" aria-label="Shot progress"></div>
+
+        <article class="shot-card" id="shotCard">
+          <div class="shot-meta">
+            <span class="take-badge" id="takeBadge">Take 1 / 6</span>
+            <span class="scene-badge">Scena: Al bar</span>
+          </div>
+          <div class="scene-frame" id="sceneFrame" aria-hidden="true">
+            <div class="scene-bg" id="sceneBg"></div>
+            <div class="scene-emoji" id="sceneEmoji"></div>
+            <div class="clapper-stamp" id="clapperStamp" hidden>✂ LOCKED</div>
+          </div>
+          <div class="line-block">
+            <p class="context" id="shotContext"></p>
+            <p class="italian-line" id="italianLine"></p>
+            <p class="gloss" id="shotGloss" hidden></p>
+            <p class="tense-tip" id="tenseTip" hidden></p>
+          </div>
+        </article>
+
+        <p class="prompt">Quale tempo usi per questa inquadratura?</p>
+        <div class="tense-row" role="group" aria-label="Choose tense">
+          <button type="button" class="tense-chip" data-tense="presente">Presente</button>
+          <button type="button" class="tense-chip" data-tense="imperfetto">Imperfetto</button>
+          <button type="button" class="tense-chip" data-tense="passato">Passato prossimo</button>
+        </div>
+
+        <div class="feedback" id="feedback" hidden role="status" aria-live="polite"></div>
+      </section>
+
+      <!-- End screening -->
+      <section class="screen" id="screenEnd" aria-label="End screening" hidden>
+        <div class="end-header">
+          <div class="end-clapper" aria-hidden="true">🎬</div>
+          <h2>Fine riprese</h2>
+          <p class="score-line" id="scoreLine">Score: 0/6</p>
+        </div>
+        <div class="film-reel" id="filmReel" aria-label="Correct lines replay"></div>
+        <div class="end-actions">
+          <button type="button" class="primary-btn" id="btnReplay">Riprendi · Replay</button>
+          <button type="button" class="ghost-btn" id="btnChangeHelp">Cambia aiuto</button>
+        </div>
+      </section>
+
+      <!-- Help sheet -->
+      <div class="sheet" id="helpSheet" hidden>
+        <div class="sheet-backdrop" id="helpBackdrop"></div>
+        <div class="sheet-card" role="dialog" aria-label="Help level">
+          <h3>Livello di aiuto</h3>
+          <div class="help-row vertical" role="group">
+            <button type="button" class="help-chip block" data-help="more">
+              <strong>More help</strong>
+              <span>English gloss + tense tip visible</span>
+            </button>
+            <button type="button" class="help-chip block" data-help="mid">
+              <strong>Just right</strong>
+              <span>Italian + short context</span>
+            </button>
+            <button type="button" class="help-chip block" data-help="challenge">
+              <strong>Challenge me</strong>
+              <span>Italian only · hint after a miss</span>
+            </button>
+          </div>
+          <button type="button" class="ghost-btn" id="btnCloseHelp">Chiudi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
