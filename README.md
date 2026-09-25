@@ -10,8 +10,8 @@ Phone-style mini demo for Sue Scotto’s Italian Level 3 class. Students act as 
 | 2 | La musica **suonava** e tutti **chiacchieravano**. | Imperfetto |
 | 3 | Improvvisamente **è arrivato** Marco. | Passato prossimo |
 | 4 | **Ha ordinato** un caffè… e **si è seduto**. | Passato prossimo |
-| 5 | Adesso Marco **racconta** una storia buffa. | Presente |
-| 6 | **Era** tardi, ma nessuno **voleva** andare a casa. | Imperfetto |
+| 5 | **Era** tardi, ma nessuno **voleva** andare a casa. | Imperfetto |
+| 6 | Oggi Marco **racconta** ancora a tutti quella serata. *(epilogue, present day)* | Presente |
 
 ## Run locally
 
@@ -23,7 +23,7 @@ Open `index.html` in a browser (no build step). Works offline once loaded.
 - **Just right** — Italian + short context
 - **Challenge me** — Italian only; soft hint after a miss
 
-Preference saved in `localStorage`.
+Preference saved in `localStorage` when available; if storage is blocked, the app keeps working and simply forgets the setting on reload.
 
 ## Live
 

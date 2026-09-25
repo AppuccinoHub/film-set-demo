@@ -4,6 +4,35 @@
   const STORAGE_HELP = 'filmSet.helpLevel';
   const STORAGE_MUTE = 'filmSet.muted';
 
+  // Safe storage: localStorage can be missing or throw (private mode,
+  // sandboxed iframes, blocked storage). Fall back to memory so the app
+  // always works; preferences just won't persist in that case.
+  const memoryStore = {};
+  function getStorage() {
+    try {
+      return window.localStorage || null;
+    } catch (_) {
+      return null;
+    }
+  }
+  function storeGet(key) {
+    try {
+      const s = getStorage();
+      if (s) {
+        const v = s.getItem(key);
+        if (v !== null && v !== undefined) return v;
+      }
+    } catch (_) { /* fall through to memory */ }
+    return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+  }
+  function storeSet(key, value) {
+    memoryStore[key] = String(value);
+    try {
+      const s = getStorage();
+      if (s) s.setItem(key, String(value));
+    } catch (_) { /* memory copy is enough */ }
+  }
+
   const HELP_HINTS = {
     more: 'English gloss + tense tip under each line.',
     mid: 'Italian + short context under each line.',
@@ -72,18 +101,6 @@
     },
     {
       id: 5,
-      emoji: '🗣️ 😂 🍕',
-      bg: 'bg-live',
-      context: 'Live take — happening now on set.',
-      italian: 'Adesso Marco racconta una storia buffa.',
-      verbHtml: 'Adesso Marco <span class="verb">racconta</span> una storia buffa.',
-      gloss: 'Now Marco is telling a funny story.',
-      tip: 'Tip: “adesso” / live now → Presente.',
-      correct: 'presente',
-      why: '“Adesso” signals right now. This is a live take in the present — not a past background or a finished event.',
-    },
-    {
-      id: 6,
       emoji: '🌃 💫 🚶',
       bg: 'bg-wrap',
       context: 'Wrap — the night’s feel, still atmospheric.',
@@ -94,11 +111,23 @@
       correct: 'imperfetto',
       why: 'Wrapping the mood of the evening (how things were / what people wanted) uses imperfetto — not a single “it got late” passato prossimo.',
     },
+    {
+      id: 6,
+      emoji: '🗣️ 😂 📅',
+      bg: 'bg-live',
+      context: 'Epilogue — present day, looking back on that night.',
+      italian: 'Oggi Marco racconta ancora a tutti quella serata.',
+      verbHtml: 'Oggi Marco <span class="verb">racconta</span> ancora a tutti quella serata.',
+      gloss: 'Today Marco still tells everyone about that evening.',
+      tip: 'Tip: “oggi” / still true now → Presente.',
+      correct: 'presente',
+      why: '“Oggi” jumps from Saturday night to today, and “racconta” is the present form of raccontare (no helper verb, not “raccontava”). The night is over, but the telling still happens now — so Presente, not a past tense.',
+    },
   ];
 
   const state = {
-    helpLevel: localStorage.getItem(STORAGE_HELP) || 'mid',
-    muted: localStorage.getItem(STORAGE_MUTE) !== '0', // default quiet
+    helpLevel: storeGet(STORAGE_HELP) || 'mid',
+    muted: storeGet(STORAGE_MUTE) !== '0', // default quiet
     index: 0,
     firstTryCorrect: 0,
     missedThisShot: false,
@@ -147,7 +176,7 @@
   function setHelpLevel(level) {
     if (!HELP_HINTS[level]) return;
     state.helpLevel = level;
-    localStorage.setItem(STORAGE_HELP, level);
+    storeSet(STORAGE_HELP, level);
     $$('.help-chip').forEach((btn) => {
       btn.setAttribute('aria-pressed', btn.dataset.help === level ? 'true' : 'false');
     });
@@ -156,7 +185,7 @@
 
   function setMuted(muted) {
     state.muted = muted;
-    localStorage.setItem(STORAGE_MUTE, muted ? '1' : '0');
+    storeSet(STORAGE_MUTE, muted ? '1' : '0');
     el.btnMute.textContent = muted ? '🔇' : '🔊';
     el.btnMute.setAttribute('aria-label', muted ? 'Unmute sound' : 'Mute sound');
   }
@@ -180,11 +209,42 @@
     } catch (_) { /* ignore */ }
   }
 
+  // Scroll the shoot screen just enough that the feedback box is fully in
+  // view. Scrolling the minimum keeps as much of the shot card (and the
+  // Italian sentence) on screen as the height allows.
+  const reduceMotionQuery = window.matchMedia
+    ? window.matchMedia('(prefers-reduced-motion: reduce)')
+    : null;
+  function revealFeedback() {
+    const scr = el.screenShoot;
+    const fb = el.feedback;
+    if (!scr || !fb || fb.hidden) return;
+    const pad = 12;
+    const scrRect = scr.getBoundingClientRect();
+    const fbRect = fb.getBoundingClientRect();
+    const cur = scr.scrollTop;
+    const fbTop = fbRect.top - scrRect.top + cur;
+    const fbBottom = fbRect.bottom - scrRect.top + cur;
+    const view = scr.clientHeight;
+    const maxScroll = Math.max(0, scr.scrollHeight - view);
+    let target = fbBottom + pad - view; // smallest scroll that shows the whole box
+    if (fbBottom - fbTop + pad * 2 > view) target = fbTop - pad; // box taller than screen: show its top
+    target = Math.min(maxScroll, Math.max(0, target));
+    if (Math.abs(target - cur) < 1) return;
+    const smooth = !(reduceMotionQuery && reduceMotionQuery.matches);
+    try {
+      scr.scrollTo({ top: target, behavior: smooth ? 'smooth' : 'auto' });
+    } catch (_) {
+      scr.scrollTop = target;
+    }
+  }
+
   function showScreen(name) {
     [el.screenStart, el.screenShoot, el.screenEnd].forEach((s) => {
       const on = s === name;
       s.classList.toggle('active', on);
       s.hidden = !on;
+      if (on) s.scrollTop = 0;
     });
   }
 
@@ -193,7 +253,7 @@
       let cls = 'sb-cell';
       if (i < state.index) cls += ' done';
       if (i === state.index) cls += ' current';
-      return `<div class="${cls}" aria-hidden="true"><span>${s.emoji.split(' ')[0]}</span><span class="sb-num">${i + 1}</span></div>`;
+      return `<div class="${cls}" aria-hidden="true"><span class="sb-emoji">${s.emoji.split(' ')[0]}</span><span class="sb-num">${i + 1}</span></div>`;
     }).join('');
   }
 
@@ -206,6 +266,7 @@
     el.feedback.hidden = true;
     el.feedback.innerHTML = '';
     el.takeBadge.textContent = `Take ${state.index + 1} / ${SHOTS.length}`;
+    el.screenShoot.scrollTop = 0; // each new shot starts with the sentence in view
 
     el.sceneBg.className = `scene-bg ${shot.bg}`;
     el.sceneEmoji.textContent = shot.emoji;
@@ -253,7 +314,8 @@
     el.clapperStamp.hidden = false;
     el.feedback.hidden = false;
     el.feedback.className = 'feedback ok';
-    el.feedback.innerHTML = `<div class="fb-title">Perfetto — ciak, si gira!</div>Line locked · ${TENSE_LABEL[shot.correct]}`;
+    el.feedback.innerHTML = `<div class="fb-title">${firstTry ? 'Buona la prima!' : 'Buona!'}</div>Line locked · ${TENSE_LABEL[shot.correct]}`;
+    revealFeedback();
     beep(660, 0.08);
     setTimeout(() => beep(880, 0.1), 90);
 
@@ -298,6 +360,7 @@
       el.tenseTip.textContent = shot.tip;
       el.tenseTip.hidden = false;
     }
+    revealFeedback();
 
     $('#btnTryAgain')?.addEventListener('click', () => {
       el.feedback.hidden = true;
@@ -310,7 +373,7 @@
     el.scoreLine.textContent = `Score: ${state.firstTryCorrect}/${SHOTS.length} first-try`;
     el.filmReel.innerHTML = SHOTS.map((s, i) => `
       <div class="reel-shot" style="animation-delay:${i * 0.08}s">
-        <div class="mini ${s.bg}">${s.emoji.split(' ')[0]}</div>
+        <div class="mini ${s.bg}"><span class="mini-emoji">${s.emoji.split(' ')[0]}</span></div>
         <div>
           <div class="reel-it">${s.italian}</div>
           <div class="reel-tense">${TENSE_LABEL[s.correct]}</div>
